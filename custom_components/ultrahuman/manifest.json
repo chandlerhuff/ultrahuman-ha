@@ -1,10 +1,12 @@
 {
   "domain": "ultrahuman",
   "name": "Ultrahuman",
-  "codeowners": ["@tanujdargan"],
+  "codeowners": [
+    "@tanujdargan"
+  ],
   "config_flow": true,
   "documentation": "https://github.com/tanujdargan/ultrahuman-ha",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/tanujdargan/ultrahuman-ha/issues",
-  "version": "2.1.0"
+  "version": "3.0.0"
 }

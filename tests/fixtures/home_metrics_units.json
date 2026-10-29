@@ -1,0 +1,468 @@
+{
+  "data": {
+    "home": {
+      "mac_address": "AA:BB:CC:DD:EE:FF",
+      "name": "Test Room",
+      "room_type": "office"
+    },
+    "date_range": {
+      "start_epoch": 1707696000,
+      "end_epoch": 1707782399,
+      "timezone": "Etc/UTC"
+    },
+    "metrics": [
+      {
+        "type": "hcho",
+        "title": "HCHO",
+        "unit": "mg/m³",
+        "data": [
+          {
+            "value": 0.025,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.015,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.035,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.025,
+          "min": 0.015,
+          "max": 0.035
+        }
+      },
+      {
+        "type": "co",
+        "title": "CO",
+        "unit": "ppm",
+        "data": [
+          {
+            "value": 0.4,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.1,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.3,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.3,
+          "min": 0.1,
+          "max": 0.5
+        }
+      },
+      {
+        "type": "co2",
+        "title": "CO₂",
+        "unit": "ppm",
+        "data": [
+          {
+            "value": 720,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 610,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 690,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 680,
+          "min": 610,
+          "max": 790
+        }
+      },
+      {
+        "type": "pm1",
+        "title": "PM1.0",
+        "unit": "µg/m³",
+        "data": [
+          {
+            "value": 5,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 2,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 7,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 4,
+          "min": 2,
+          "max": 7
+        }
+      },
+      {
+        "type": "pm10",
+        "title": "PM10",
+        "unit": "µg/m³",
+        "data": [
+          {
+            "value": 12,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 6,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 15,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 10,
+          "min": 6,
+          "max": 15
+        }
+      },
+      {
+        "type": "pm25",
+        "title": "PM2.5",
+        "unit": "µg/m³",
+        "data": [
+          {
+            "value": 8,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 3,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 11,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 6,
+          "min": 3,
+          "max": 11
+        }
+      },
+      {
+        "type": "voc",
+        "title": "VOC",
+        "unit": "mg/m³",
+        "data": [
+          {
+            "value": 0.35,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.15,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.6,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.3,
+          "min": 0.15,
+          "max": 0.6
+        }
+      },
+      {
+        "type": "temp",
+        "title": "Temperature",
+        "unit": "°F",
+        "data": [
+          {
+            "value": 77,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 73,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 79,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 75.2,
+          "min": 73,
+          "max": 79
+        }
+      },
+      {
+        "type": "humidity",
+        "title": "Humidity",
+        "unit": "%",
+        "data": [
+          {
+            "value": 45,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 52,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 44,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 47,
+          "min": 44,
+          "max": 52
+        }
+      },
+      {
+        "type": "noise",
+        "title": "Noise",
+        "unit": "dB",
+        "data": [
+          {
+            "value": 39,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 29,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 48,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 36,
+          "min": 29,
+          "max": 48
+        }
+      },
+      {
+        "type": "uva",
+        "title": "UVA",
+        "unit": "mw/cm²",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.02,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.01,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.01,
+          "min": 0,
+          "max": 0.03
+        }
+      },
+      {
+        "type": "uvb",
+        "title": "UVB",
+        "unit": "mw/cm²",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.04,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.02,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.02,
+          "min": 0,
+          "max": 0.06
+        }
+      },
+      {
+        "type": "uvc",
+        "title": "UVC",
+        "unit": "mw/cm²",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 0.06,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 0.03,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 0.03,
+          "min": 0,
+          "max": 0.09
+        }
+      },
+      {
+        "type": "red",
+        "title": "Red",
+        "unit": "lux",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 12,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 4,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 4,
+          "min": 0,
+          "max": 18
+        }
+      },
+      {
+        "type": "green",
+        "title": "Green",
+        "unit": "lux",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 18,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 6,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 6,
+          "min": 0,
+          "max": 24
+        }
+      },
+      {
+        "type": "blue",
+        "title": "Blue",
+        "unit": "lux",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 9,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 3,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 3,
+          "min": 0,
+          "max": 15
+        }
+      },
+      {
+        "type": "ir",
+        "title": "IR",
+        "unit": "lux",
+        "data": [
+          {
+            "value": 0,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 30,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 10,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 10,
+          "min": 0,
+          "max": 40
+        }
+      },
+      {
+        "type": "aqi",
+        "title": "AQI",
+        "unit": "",
+        "data": [
+          {
+            "value": 17,
+            "timestamp": 1707703200
+          },
+          {
+            "value": 23,
+            "timestamp": 1707696600
+          },
+          {
+            "value": 19,
+            "timestamp": 1707699600
+          }
+        ],
+        "summary": {
+          "count": 12,
+          "average": 20,
+          "min": 12,
+          "max": 26
+        }
+      }
+    ]
+  },
+  "error": null,
+  "status": 200
+}

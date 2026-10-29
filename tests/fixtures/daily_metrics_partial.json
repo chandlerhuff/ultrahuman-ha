@@ -1,0 +1,323 @@
+{
+  "data": {
+    "metrics": {
+      "2024-02-12": [
+        {
+          "type": "hr",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Heart Rate",
+            "last_reading": 72,
+            "unit": "BPM",
+            "values": [
+              {
+                "value": 72,
+                "timestamp": 1707727500
+              },
+              {
+                "value": 78,
+                "timestamp": 1707696900
+              },
+              {
+                "value": 75,
+                "timestamp": 1707717600
+              }
+            ]
+          }
+        },
+        {
+          "type": "temp",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Skin Temperature",
+            "last_reading": 31.25,
+            "unit": "°C",
+            "values": [
+              {
+                "value": 31.625,
+                "timestamp": 1707727500
+              },
+              {
+                "value": 30.0,
+                "timestamp": 1707696900
+              },
+              {
+                "value": 31.0,
+                "timestamp": 1707717600
+              }
+            ]
+          }
+        },
+        {
+          "type": "hrv",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "HRV",
+            "avg": 48,
+            "values": [
+              {
+                "value": 52,
+                "timestamp": 1707727500
+              },
+              {
+                "value": 40,
+                "timestamp": 1707696900
+              },
+              {
+                "value": 46,
+                "timestamp": 1707717600
+              }
+            ]
+          }
+        },
+        {
+          "type": "steps",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "total": 2468,
+            "avg": 80,
+            "values": [
+              {
+                "value": 20,
+                "timestamp": 1707727500
+              },
+              {
+                "value": 120,
+                "timestamp": 1707696900
+              },
+              {
+                "value": 180,
+                "timestamp": 1707717600
+              }
+            ]
+          }
+        },
+        {
+          "type": "night_rhr",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Resting HR",
+            "avg": 54,
+            "values": [
+              {
+                "timestamp": 1707696000,
+                "value": 54
+              },
+              {
+                "timestamp": 1707523200,
+                "value": 61
+              },
+              {
+                "timestamp": 1707609600,
+                "value": 55
+              }
+            ]
+          }
+        },
+        {
+          "type": "avg_sleep_hrv",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "value": 63
+          }
+        },
+        {
+          "type": "sleep",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "index_valid": true,
+            "bedtime_start": 1707699600,
+            "bedtime_end": 1707726600,
+            "sleep_score": {
+              "score": 87
+            },
+            "total_sleep": {
+              "minutes": 420,
+              "seconds": 25200
+            },
+            "time_in_bed": {
+              "minutes": 450
+            },
+            "sleep_efficiency": {
+              "percentage": 93
+            },
+            "deep_sleep": {
+              "minutes": 90,
+              "seconds": 5400
+            },
+            "rem_sleep": {
+              "minutes": 110,
+              "seconds": 6600,
+              "percentage": 26.2
+            },
+            "light_sleep": {
+              "minutes": 220,
+              "seconds": 13200,
+              "percentage": 52
+            },
+            "temperature_deviation": {
+              "celsius": -0.35
+            },
+            "hr_drop": {
+              "time": "5:20 AM"
+            },
+            "restorative_sleep": {
+              "percentage": 64
+            },
+            "movements": {
+              "count": 11
+            },
+            "morning_alertness": {
+              "minutes": null
+            },
+            "full_sleep_cycles": {
+              "cycles": 5
+            },
+            "tosses_and_turns": {
+              "count": 6
+            },
+            "average_body_temperature": {
+              "celsius": 34.75
+            },
+            "spo2": null,
+            "quick_metrics": [
+              {
+                "type": "time_in_bed",
+                "title": "TIME IN BED",
+                "value": 27000,
+                "unit": null
+              },
+              {
+                "type": "total_sleep",
+                "title": "TOTAL SLEEP",
+                "value": 25200,
+                "unit": null
+              },
+              {
+                "type": "sleep_efic",
+                "title": "EFFICIENCY",
+                "value": 93,
+                "unit": null
+              },
+              {
+                "type": "avg_hr",
+                "title": "AVG HEART RATE",
+                "value": 76,
+                "unit": "bpm"
+              },
+              {
+                "type": "avg_hrv",
+                "title": "AVG HRV",
+                "value": 63,
+                "unit": null
+              }
+            ],
+            "sleep_stages": [
+              {
+                "type": "deep_sleep",
+                "title": "Deep Sleep",
+                "percentage": 20,
+                "stage_time": 5400
+              },
+              {
+                "type": "light_sleep",
+                "title": "Light Sleep",
+                "percentage": 49,
+                "stage_time": 12600
+              },
+              {
+                "type": "rem_sleep",
+                "title": "REM Sleep",
+                "percentage": 24,
+                "stage_time": 6600
+              },
+              {
+                "type": "awake",
+                "title": "Awake",
+                "percentage": 7,
+                "stage_time": 1800
+              }
+            ]
+          }
+        },
+        {
+          "type": "sleep_rhr",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "value": 57
+          }
+        },
+        {
+          "type": "recovery_index",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Recovery Index",
+            "value": 81
+          }
+        },
+        {
+          "type": "movement_index",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Movement Index",
+            "value": 74
+          }
+        },
+        {
+          "type": "active_minutes",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Active Minutes",
+            "value": 0
+          }
+        },
+        {
+          "type": "inactive_time",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Inactive Time",
+            "value": 83.25
+          }
+        },
+        {
+          "type": "weekly_active_minutes",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Weekly Active Minutes",
+            "value": 210
+          }
+        },
+        {
+          "type": "movements",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Movements",
+            "value": 3
+          }
+        },
+        {
+          "type": "morning_alertness",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "Morning Alertness",
+            "value": null,
+            "unit": "minutes",
+            "status": "pending"
+          }
+        },
+        {
+          "type": "vo2_max",
+          "object": {
+            "day_start_timestamp": 1707696000,
+            "title": "VO2 Max",
+            "value": 42
+          }
+        }
+      ]
+    },
+    "latest_time_zone": "Etc/UTC",
+    "last_synced_at": 1707728400
+  },
+  "error": null,
+  "status": 200
+}

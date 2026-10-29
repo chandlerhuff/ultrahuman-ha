@@ -1,0 +1,177 @@
+{
+  "data": {
+    "home": {
+      "mac_address": "AA:BB:CC:DD:EE:FF",
+      "name": "Living",
+      "room_type": "bedroom"
+    },
+    "date_range": {
+      "start_epoch": 1755023400,
+      "end_epoch": 1755109799,
+      "timezone": "Asia/Calcutta"
+    },
+    "metrics": [
+      {
+        "type": "pm25",
+        "title": "PM2.5",
+        "unit": "µg/m³",
+        "data": [
+          {
+            "value": 5,
+            "timestamp": 1755023741
+          },
+          {
+            "value": 3,
+            "timestamp": 1755024098
+          },
+          {
+            "value": 4,
+            "timestamp": 1755024276
+          },
+          {
+            "value": 4,
+            "timestamp": 1755024638
+          },
+          {
+            "value": 3,
+            "timestamp": 1755024980
+          },
+          {
+            "value": 6,
+            "timestamp": 1755025184
+          },
+          {
+            "value": 4,
+            "timestamp": 1755025476
+          },
+          {
+            "value": 4,
+            "timestamp": 1755025724
+          },
+          {
+            "value": 4,
+            "timestamp": 1755026081
+          },
+          {
+            "value": 4,
+            "timestamp": 1755026406
+          }
+        ],
+        "summary": {
+          "count": 208,
+          "average": 9.91,
+          "min": 1,
+          "max": 56
+        }
+      },
+      {
+        "type": "noise",
+        "title": "Noise",
+        "unit": "dB",
+        "data": [
+          {
+            "value": 38,
+            "timestamp": 1755023699
+          },
+          {
+            "value": 36,
+            "timestamp": 1755024056
+          },
+          {
+            "value": 37,
+            "timestamp": 1755024276
+          },
+          {
+            "value": 38,
+            "timestamp": 1755024460
+          },
+          {
+            "value": 42,
+            "timestamp": 1755024817
+          },
+          {
+            "value": 41,
+            "timestamp": 1755025142
+          },
+          {
+            "value": 36,
+            "timestamp": 1755025362
+          },
+          {
+            "value": 37,
+            "timestamp": 1755025861
+          },
+          {
+            "value": 38,
+            "timestamp": 1755026039
+          },
+          {
+            "value": 35,
+            "timestamp": 1755026406
+          }
+        ],
+        "summary": {
+          "count": 209,
+          "average": 41.8,
+          "min": 30,
+          "max": 68
+        }
+      },
+      {
+        "type": "co2",
+        "title": "CO₂",
+        "unit": "ppm",
+        "data": [
+          {
+            "value": 400,
+            "timestamp": 1755023741
+          },
+          {
+            "value": 400,
+            "timestamp": 1755024098
+          },
+          {
+            "value": 400,
+            "timestamp": 1755024276
+          },
+          {
+            "value": 400,
+            "timestamp": 1755024638
+          },
+          {
+            "value": 400,
+            "timestamp": 1755025006
+          },
+          {
+            "value": 400,
+            "timestamp": 1755025320
+          },
+          {
+            "value": 419,
+            "timestamp": 1755025476
+          },
+          {
+            "value": 431,
+            "timestamp": 1755025861
+          },
+          {
+            "value": 430,
+            "timestamp": 1755026039
+          },
+          {
+            "value": 444,
+            "timestamp": 1755026449
+          }
+        ],
+        "summary": {
+          "count": 208,
+          "average": 435.2,
+          "min": 400,
+          "max": 677
+        }
+      }
+    ]
+  },
+  "error": null,
+  "status": 200
+}

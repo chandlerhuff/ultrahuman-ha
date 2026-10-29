@@ -3,24 +3,56 @@
     "step": {
       "user": {
         "title": "Set up Ultrahuman",
-        "description": "Enter your Ultrahuman Partner API key and the email address associated with your Ultrahuman account.",
+        "menu_options": {
+          "daily": "Daily health metrics",
+          "home": "Home environmental metrics"
+        }
+      },
+      "daily": {
+        "title": "Daily health metrics",
+        "description": "Enter your personal API token and account email. For a shared account, authorize access using Partner ID in the Ultrahuman app.",
         "data": {
-          "api_key": "API Key",
-          "email": "Email"
+          "api_key": "API token",
+          "email": "Account email"
         },
         "data_description": {
-          "api_key": "Your Ultrahuman Partner API authorization token.",
-          "email": "The email address linked to your Ultrahuman account."
+          "api_key": "Create a personal API token in the Ultrahuman Vision developer portal.",
+          "email": "The Ultrahuman account whose daily health data you want to access."
+        }
+      },
+      "home": {
+        "title": "Home environmental metrics",
+        "description": "Configure one Ultrahuman Home device. Add the integration again to connect another device.",
+        "data": {
+          "api_key": "API token",
+          "mac_address": "Device MAC address",
+          "email": "Shared account email (optional)"
+        },
+        "data_description": {
+          "api_key": "Your personal API token from Ultrahuman Vision.",
+          "mac_address": "The Home device MAC address, for example AA:BB:CC:DD:EE:FF.",
+          "email": "Leave empty for your own device. Shared accounts must authorize access through Partner ID."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Update API token",
+        "description": "Enter a new personal API token for this Ultrahuman account or Home device.",
+        "data": {
+          "api_key": "API token"
         }
       }
     },
     "error": {
-      "invalid_auth": "Invalid API key or email address.",
-      "cannot_connect": "Unable to connect to the Ultrahuman API.",
+      "invalid_auth": "Invalid API token or access denied.",
+      "invalid_email": "Enter a valid email address.",
+      "invalid_mac": "Enter a valid device MAC address.",
+      "rate_limited": "Ultrahuman is limiting requests. Wait before trying again.",
+      "cannot_connect": "Unable to fetch valid data from the Ultrahuman API. Check the account, device, sharing permissions, and connection.",
       "unknown": "An unexpected error occurred."
     },
     "abort": {
-      "already_configured": "This Ultrahuman account is already configured."
+      "already_configured": "This account or Home device is already configured.",
+      "reauth_successful": "API token updated successfully."
     }
   },
   "entity": {
@@ -87,7 +119,135 @@
       },
       "vo2_max": {
         "name": "VO2 Max"
+      },
+      "glucose": {
+        "name": "Glucose"
+      },
+      "sleep_rhr": {
+        "name": "Sleep Resting Heart Rate"
+      },
+      "avg_sleep_hrv": {
+        "name": "Average Sleep HRV"
+      },
+      "active_minutes": {
+        "name": "Active Minutes"
+      },
+      "time_in_bed": {
+        "name": "Time in Bed"
+      },
+      "temperature_deviation": {
+        "name": "Temperature Deviation"
+      },
+      "hr_drop": {
+        "name": "Heart Rate Drop"
+      },
+      "movements": {
+        "name": "Movements"
+      },
+      "morning_alertness": {
+        "name": "Morning Alertness"
+      },
+      "full_sleep_cycles": {
+        "name": "Complete Sleep Cycles"
+      },
+      "tosses_and_turns": {
+        "name": "Tosses and Turns"
+      },
+      "average_body_temperature": {
+        "name": "Average Body Temperature"
+      },
+      "hcho": {
+        "name": "Formaldehyde"
+      },
+      "co": {
+        "name": "Carbon Monoxide"
+      },
+      "co2": {
+        "name": "Carbon Dioxide"
+      },
+      "pm1": {
+        "name": "PM1"
+      },
+      "pm10": {
+        "name": "PM10"
+      },
+      "pm25": {
+        "name": "PM2.5"
+      },
+      "voc": {
+        "name": "Volatile Organic Compounds"
+      },
+      "temp": {
+        "name": "Temperature"
+      },
+      "humidity": {
+        "name": "Humidity"
+      },
+      "noise": {
+        "name": "Noise"
+      },
+      "mic": {
+        "name": "Microphone Analysis"
+      },
+      "uva": {
+        "name": "UVA"
+      },
+      "uvb": {
+        "name": "UVB"
+      },
+      "uvc": {
+        "name": "UVC"
+      },
+      "red": {
+        "name": "Red Light"
+      },
+      "green": {
+        "name": "Green Light"
+      },
+      "blue": {
+        "name": "Blue Light"
+      },
+      "ir": {
+        "name": "Infrared"
+      },
+      "aqi": {
+        "name": "Air Quality Index"
+      },
+      "weekly_active_minutes": {
+        "name": "Weekly Active Minutes"
+      },
+      "inactive_time": {
+        "name": "Inactive Time"
+      },
+      "sleep_movements": {
+        "name": "Sleep Movements"
+      },
+      "restorative_sleep_percentage": {
+        "name": "Restorative Sleep Percentage"
+      },
+      "hr_drop_time": {
+        "name": "Heart Rate Drop Time"
+      },
+      "morning_alertness_minutes": {
+        "name": "Morning Alertness Duration"
       }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Home refresh settings",
+        "description": "Choose how often this Home device refreshes. Manual refresh is also available.",
+        "data": {
+          "update_interval": "Refresh interval (minutes)"
+        },
+        "data_description": {
+          "update_interval": "From 1 to 60 minutes. The default is 5 minutes."
+        }
+      }
+    },
+    "abort": {
+      "no_options": "Daily health metrics refresh hourly and have no additional settings."
     }
   }
 }

@@ -1,10 +1,10 @@
 /**
- * Ultrahuman Ring Card v4 - Custom Lovelace Cards for Home Assistant
+ * Ultrahuman Cards v5 - Custom Lovelace Cards for Home Assistant
  * Compact dashboard design with HA theme integration and sparkline graphs
- * Includes: all-in-one card + 6 individual metric cards
+ * Includes: all-in-one card, 6 daily metric cards, and a Home environmental card
  */
 
-const CARD_VERSION = "4.0.0";
+const CARD_VERSION = "5.0.0";
 
 /* ══════════════════════ SVG LOGO ══════════════════════ */
 const UH_LOGO_SVG = `<svg viewBox="0 0 180 16" width="120" height="12" xmlns="http://www.w3.org/2000/svg">
@@ -16,7 +16,7 @@ const UH_LOGO_SVG = `<svg viewBox="0 0 180 16" width="120" height="12" xmlns="ht
 
 function uhGetState(hass, prefix, key) {
   const entityId = `${prefix}_${key}`;
-  const entity = hass?.states[entityId];
+  const entity = hass?.states?.[entityId];
   if (!entity || entity.state === "unknown" || entity.state === "unavailable") {
     return null;
   }
@@ -25,9 +25,9 @@ function uhGetState(hass, prefix, key) {
 
 function uhGetNumericState(hass, prefix, key) {
   const val = uhGetState(hass, prefix, key);
-  if (val === null || val === "None") return null;
-  const num = parseFloat(val);
-  return isNaN(num) ? null : num;
+  if (val === null || val === "None" || String(val).trim() === "") return null;
+  const num = Number(val);
+  return Number.isFinite(num) ? num : null;
 }
 
 function uhGetScoreColor(score) {
@@ -54,12 +54,68 @@ function uhGetScoreLabel(score) {
   return "Low";
 }
 
+function uhEscape(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[char]));
+}
+
+function uhGetAttributes(hass, prefix, key) {
+  return hass?.states?.[`${prefix}_${key}`]?.attributes || {};
+}
+
+function uhGetUnit(hass, prefix, key, fallback = "") {
+  return uhGetAttributes(hass, prefix, key).unit_of_measurement ?? fallback;
+}
+
 function uhFormatMinutesPlain(mins) {
   if (mins === null) return "--";
-  const h = Math.floor(mins / 60);
-  const m = Math.round(mins % 60);
-  return `${h}h ${m}m`;
+  const rounded = Math.round(mins);
+  return `${Math.floor(rounded / 60)}h ${rounded % 60}m`;
 }
+
+function uhFormatDuration(hass, prefix, key) {
+  const value = uhGetNumericState(hass, prefix, key);
+  if (value === null) return "--";
+  const unit = uhGetUnit(hass, prefix, key, "min");
+  const factors = { s: 1 / 60, min: 1, h: 60, d: 1440 };
+  return Object.hasOwn(factors, unit)
+    ? uhFormatMinutesPlain(value * factors[unit])
+    : `${value} ${unit}`;
+}
+
+const UH_DAILY_ADDITIONS = {
+  glucose: { label: "LATEST GLUCOSE", unit: "mg/dL" },
+  sleep_rhr: { label: "SLEEP RESTING HR", unit: "bpm" },
+  avg_sleep_hrv: { label: "SLEEP HRV", unit: "ms" },
+  active_minutes: { label: "ACTIVE MINUTES", unit: "min" },
+  time_in_bed: { label: "TIME IN BED", duration: true },
+  temperature_deviation: { label: "TEMPERATURE DEVIATION", unit: "°C" },
+  hr_drop: { label: "HEART RATE DROP", unit: "bpm" },
+  movements: { label: "MOVEMENTS", unit: "count" },
+  morning_alertness: { label: "MORNING ALERTNESS", unit: "score" },
+  full_sleep_cycles: { label: "COMPLETE SLEEP CYCLES", unit: "cycles" },
+  tosses_and_turns: { label: "TOSSES AND TURNS", unit: "count" },
+  average_body_temperature: { label: "AVERAGE BODY TEMPERATURE", unit: "°C" },
+  inactive_time: { label: "INACTIVE TIME", unit: "" },
+  weekly_active_minutes: { label: "WEEKLY ACTIVE MINUTES", unit: "min" },
+  sleep_movements: { label: "SLEEP MOVEMENTS", unit: "count" },
+  restorative_sleep_percentage: { label: "RESTORATIVE SLEEP", unit: "%" },
+  hr_drop_time: { label: "HEART RATE DROP TIME", text: true },
+  morning_alertness_minutes: { label: "MORNING ALERTNESS DURATION", duration: true },
+};
+
+const UH_HOME_METRICS = [
+  ["aqi", "AIR QUALITY INDEX"], ["co2", "CARBON DIOXIDE"],
+  ["pm25", "PM2.5"], ["pm10", "PM10"], ["pm1", "PM1"],
+  ["voc", "VOLATILE ORGANIC COMPOUNDS"], ["hcho", "FORMALDEHYDE"],
+  ["co", "CARBON MONOXIDE"], ["temp", "TEMPERATURE"],
+  ["humidity", "HUMIDITY"], ["noise", "NOISE"],
+  ["mic", "MICROPHONE ANALYSIS"], ["uva", "UVA"], ["uvb", "UVB"],
+  ["uvc", "UVC"], ["red", "RED LIGHT"], ["green", "GREEN LIGHT"],
+  ["blue", "BLUE LIGHT"], ["ir", "INFRARED"],
+];
+const UH_HOME_PRIMARY_COUNT = 11;
 
 /* ══════════════════════ SPARKLINE HELPERS ══════════════════════ */
 
@@ -83,8 +139,9 @@ async function uhFetchHistory(hass, entityId) {
     const states = result?.[entityId] || [];
     const points = [];
     for (const s of states) {
-      const val = parseFloat(s.s);
-      if (!isNaN(val)) {
+      if (s.s == null || String(s.s).trim() === "") continue;
+      const val = Number(s.s);
+      if (Number.isFinite(val)) {
         points.push({ t: s.lu, v: val });
       }
     }
@@ -120,13 +177,13 @@ function uhRenderSparklineSVG(points, color) {
 
 function uhMetricRow(label, value, unit, scoreColor, statusLabel, sparklineHtml) {
   const badge = statusLabel
-    ? `<span class="status-badge" style="color:${scoreColor};background:${scoreColor}22">${statusLabel}</span>`
+    ? `<span class="status-badge" style="color:${scoreColor};background:${scoreColor}22">${uhEscape(statusLabel)}</span>`
     : "";
   return `
   <div class="metric-row">
     <div class="metric-header">
-      <span class="metric-label">${label}</span>
-      <span class="metric-value">${value}${unit ? `<span class="metric-unit"> ${unit}</span>` : ""}${badge}</span>
+      <span class="metric-label">${uhEscape(label)}</span>
+      <span class="metric-value">${uhEscape(value)}${unit ? `<span class="metric-unit"> ${uhEscape(unit)}</span>` : ""}${badge}</span>
     </div>
     ${sparklineHtml ? `<div class="metric-graph">${sparklineHtml}</div>` : ""}
   </div>
@@ -146,8 +203,8 @@ function uhSnapshotPill(iconName, value, unit) {
   return `
   <div class="snapshot-pill">
     <div class="pill-icon">${icons[iconName] || ""}</div>
-    <div class="pill-value">${value}</div>
-    <div class="pill-unit">${unit}</div>
+    <div class="pill-value">${uhEscape(value)}</div>
+    <div class="pill-unit">${uhEscape(unit)}</div>
   </div>
   `;
 }
@@ -208,6 +265,12 @@ function uhStyles() {
       from { transform: rotate(0deg); }
       to { transform: rotate(360deg); }
     }
+
+    .refresh-error { color: var(--error-color, #db4437); font-size: 0.8em; margin-bottom: 8px; }
+    .home-title { font-size: 1em; margin: 0 0 6px; }
+    .reading-time { font-size: 0.75em; color: var(--uh-text-secondary); margin-bottom: 12px; }
+    details > summary { cursor: pointer; font-size: 0.8em; color: var(--uh-text-secondary); margin: 12px 0 8px; }
+    .uh-refresh-btn:disabled { cursor: wait; }
 
     /* ── Metric Row ── */
     .metric-row {
@@ -495,7 +558,7 @@ function uhRenderSnapshot(hass, prefix) {
   return `
   <div class="snapshot-title">Snapshot</div>
   <div class="snapshot-row">
-    ${uhSnapshotPill("thermometer", temp !== null ? parseFloat(temp).toFixed(1) : "--", "\u00B0C")}
+    ${uhSnapshotPill("thermometer", temp !== null ? temp.toFixed(1) : "--", uhGetUnit(hass, prefix, "skin_temperature", "°C"))}
     ${uhSnapshotPill("oxygen", spo2 ?? "--", "%")}
     ${uhSnapshotPill("shoe-print", steps !== null ? Math.round(steps).toLocaleString() : "--", "steps")}
     ${uhSnapshotPill("heart-pulse", hr ?? "--", "bpm")}
@@ -526,6 +589,9 @@ class UltrahumanCardBase extends HTMLElement {
     super();
     this._sparklines = {};
     this._sparklinesPending = false;
+    this._historyGeneration = 0;
+    this._refreshing = false;
+    this._refreshError = "";
   }
 
   set hass(hass) {
@@ -541,6 +607,11 @@ class UltrahumanCardBase extends HTMLElement {
       throw new Error("Please define entity_prefix (e.g. 'sensor.ultrahuman_ring')");
     }
     this._config = config;
+    this._historyGeneration++;
+    this._sparklines = {};
+    this._sparklinesPending = false;
+    this._refreshing = false;
+    this._refreshError = "";
     this._initialized = false;
     this._render();
     this._initialized = true;
@@ -555,10 +626,11 @@ class UltrahumanCardBase extends HTMLElement {
     return `
     <div class="uh-header">
       <span class="uh-brand">${UH_LOGO_SVG}</span>
-      <button class="uh-refresh-btn" id="refreshBtn" title="Refresh data">
+      <button class="uh-refresh-btn${this._refreshing ? " spinning" : ""}" id="refreshBtn" title="Refresh data" ${this._refreshing ? "disabled" : ""}>
         <svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M17.65 6.35A7.96 7.96 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
       </button>
     </div>
+    <div id="refreshError" class="refresh-error" role="alert" ${this._refreshError ? "" : "hidden"}>${uhEscape(this._refreshError)}</div>
     `;
   }
 
@@ -569,30 +641,58 @@ class UltrahumanCardBase extends HTMLElement {
     }
   }
 
-  _refreshData() {
-    if (!this._hass) return;
+  _setRefreshError(message) {
+    this._refreshError = message;
+    const error = this.shadowRoot?.getElementById("refreshError");
+    if (error) {
+      error.textContent = message;
+      error.hidden = !message;
+    }
+  }
+
+  async _refreshData() {
+    if (!this._hass || this._refreshing) return;
     const metrics = this._getRefreshMetrics();
-    let foundEntityId = null;
-    for (const key of metrics) {
-      const entityId = `${this._prefix}_${key}`;
-      if (this._hass.states[entityId]) {
-        foundEntityId = entityId;
-        break;
-      }
+    const prefix = this._prefix;
+    let generation = this._historyGeneration;
+    const foundEntityId = metrics.map(key => `${prefix}_${key}`)
+      .find(entityId => this._hass.states[entityId]);
+    this._setRefreshError("");
+    if (!foundEntityId) {
+      this._setRefreshError("No configured sensor is available to refresh.");
+      return;
     }
-    if (foundEntityId) {
-      this._hass.callService("homeassistant", "update_entity", { entity_id: foundEntityId });
-    }
-    for (const key of metrics) {
-      UH_HISTORY_CACHE.delete(`${this._prefix}_${key}`);
-    }
-    const btn = this.shadowRoot ? this.shadowRoot.getElementById("refreshBtn") : null;
+    this._refreshing = true;
+    const btn = this.shadowRoot?.getElementById("refreshBtn");
     if (btn) {
       btn.classList.add("spinning");
-      setTimeout(() => {
+      btn.disabled = true;
+    }
+    try {
+      await this._hass.callService("homeassistant", "update_entity", { entity_id: foundEntityId });
+      // Coordinator failures mark entities unavailable without rejecting the service.
+      if (generation === this._historyGeneration
+          && this._hass.states[foundEntityId]?.state === "unavailable") {
+        throw new Error("The integration could not update its readings");
+      }
+      for (const key of metrics) UH_HISTORY_CACHE.delete(`${prefix}_${key}`);
+      if (generation === this._historyGeneration) {
+        // Discard history requests started before this refresh completed.
+        generation = ++this._historyGeneration;
+        this._sparklinesPending = false;
+        this._updateValues();
+        await this._loadSparklines();
+      }
+    } catch {
+      if (generation === this._historyGeneration) {
+        this._setRefreshError("Unable to refresh data. Check the integration and try again.");
+      }
+    } finally {
+      if (generation === this._historyGeneration) this._refreshing = false;
+      if (btn) {
         btn.classList.remove("spinning");
-        this._loadSparklines();
-      }, 1500);
+        btn.disabled = false;
+      }
     }
   }
 
@@ -605,6 +705,7 @@ class UltrahumanCardBase extends HTMLElement {
       "metabolic_score", "glucose_variability", "average_glucose",
       "hba1c", "time_in_target",
       "recovery_index", "movement_index", "vo2_max",
+      ...Object.keys(UH_DAILY_ADDITIONS),
     ];
   }
 
@@ -614,13 +715,16 @@ class UltrahumanCardBase extends HTMLElement {
 
   async _loadSparklines() {
     if (!this._hass || this._sparklinesPending) return;
-    const entities = this._getSparklineEntities();
+    const entities = this._getSparklineEntities()
+      .filter(key => this._hass.states[`${this._prefix}_${key}`]);
     if (entities.length === 0) return;
+    const generation = this._historyGeneration;
     this._sparklinesPending = true;
     try {
       const results = await Promise.all(
         entities.map(key => uhFetchHistory(this._hass, `${this._prefix}_${key}`))
       );
+      if (generation !== this._historyGeneration) return;
       let changed = false;
       entities.forEach((key, i) => {
         const old = this._sparklines[key];
@@ -632,7 +736,7 @@ class UltrahumanCardBase extends HTMLElement {
       });
       if (changed) this._updateSparklines();
     } finally {
-      this._sparklinesPending = false;
+      if (generation === this._historyGeneration) this._sparklinesPending = false;
     }
   }
 
@@ -640,8 +744,30 @@ class UltrahumanCardBase extends HTMLElement {
     return uhRenderSparklineSVG(this._sparklines[key], color);
   }
 
-  _render() {}
-  _updateValues() {}
+  _renderAdditionalMetrics(keys) {
+    return keys.map(key => {
+      const metric = UH_DAILY_ADDITIONS[key];
+      const value = metric.text
+        ? uhGetState(this._hass, this._prefix, key)
+        : uhGetNumericState(this._hass, this._prefix, key);
+      if (value === null || (metric.text && (value === "None" || !String(value).trim()))) return "";
+      return uhMetricRow(metric.label,
+        metric.duration ? uhFormatDuration(this._hass, this._prefix, key) : value,
+        metric.duration || metric.text ? "" : uhGetUnit(this._hass, this._prefix, key, metric.unit),
+        "", "", "");
+    }).join("");
+  }
+
+  _render() {
+    if (!this.shadowRoot) this.attachShadow({ mode: "open" });
+    this.shadowRoot.innerHTML = `<style>${uhStyles()}</style><ha-card><div class="uh-card">${this._renderHeader()}<div id="contentArea">${this._renderContent()}</div></div></ha-card>`;
+    this._attachRefreshHandler();
+  }
+
+  _updateValues() {
+    const content = this.shadowRoot?.getElementById("contentArea");
+    if (content && this._hass) content.innerHTML = this._renderContent();
+  }
   _updateSparklines() { this._updateValues(); }
 }
 
@@ -720,6 +846,8 @@ class UltrahumanRingCard extends UltrahumanCardBase {
     const spo2 = uhGetNumericState(h, p, "spo2");
     const metabolic = uhGetNumericState(h, p, "metabolic_score");
 
+    const additions = this._renderAdditionalMetrics(Object.keys(UH_DAILY_ADDITIONS));
+    const expanded = this.shadowRoot?.getElementById("dailyDetails")?.open;
     return [
       uhMetricRow("SLEEP SCORE", sleep ?? "--", "", uhGetScoreColorRaw(sleep), uhGetScoreLabel(sleep), this._getSparklineHtml("sleep_score", uhGetScoreColorRaw(sleep))),
       uhMetricRow("MOVEMENT", movement ?? "--", "", uhGetScoreColorRaw(movement), uhGetScoreLabel(movement), this._getSparklineHtml("movement_index", uhGetScoreColorRaw(movement))),
@@ -731,6 +859,7 @@ class UltrahumanRingCard extends UltrahumanCardBase {
       uhMetricRow("SpO2", spo2 ?? "--", "%", "", "", ""),
       uhMetricRow("METABOLIC", metabolic ?? "--", "", uhGetScoreColorRaw(metabolic), uhGetScoreLabel(metabolic), ""),
       `</div>`,
+      additions ? `<details id="dailyDetails" ${expanded ? "open" : ""}><summary>More daily readings</summary><div class="metric-grid">${additions}</div></details>` : "",
     ].join("");
   }
 
@@ -809,7 +938,7 @@ class UltrahumanRingSleepCard extends UltrahumanCardBase {
   getCardSize() { return 5; }
 
   _getRefreshMetrics() {
-    return ["sleep_score", "total_sleep", "sleep_efficiency", "deep_sleep", "rem_sleep", "light_sleep", "restorative_sleep", "resting_heart_rate"];
+    return ["sleep_score", "total_sleep", "sleep_efficiency", "deep_sleep", "rem_sleep", "light_sleep", "restorative_sleep", "resting_heart_rate", "time_in_bed", "temperature_deviation", "hr_drop", "hr_drop_time", "sleep_movements", "restorative_sleep_percentage", "morning_alertness", "morning_alertness_minutes", "full_sleep_cycles", "tosses_and_turns", "average_body_temperature"];
   }
   _getSparklineEntities() { return ["sleep_score", "total_sleep", "sleep_efficiency"]; }
 
@@ -841,40 +970,52 @@ class UltrahumanRingSleepCard extends UltrahumanCardBase {
   _renderContent() {
     const h = this._hass, p = this._prefix;
     const score = uhGetNumericState(h, p, "sleep_score");
-    const total = uhGetNumericState(h, p, "total_sleep");
     const efficiency = uhGetNumericState(h, p, "sleep_efficiency");
-    const deep = uhGetNumericState(h, p, "deep_sleep");
-    const rem = uhGetNumericState(h, p, "rem_sleep");
-    const light = uhGetNumericState(h, p, "light_sleep");
     const restorative = uhGetNumericState(h, p, "restorative_sleep");
     const rhr = uhGetNumericState(h, p, "resting_heart_rate");
-
-    const noStage = deep == null && rem == null && light == null;
-    const totalMin = noStage ? 0 : (deep || 0) + (rem || 0) + (light || 0);
-    const deepPct = totalMin > 0 ? Math.round((deep || 0) / totalMin * 100) : 0;
-    const remPct = totalMin > 0 ? Math.round((rem || 0) / totalMin * 100) : 0;
-    const lightPct = totalMin > 0 ? Math.round((light || 0) / totalMin * 100) : 0;
-    const awakePct = noStage ? 0 : Math.max(0, 100 - deepPct - remPct - lightPct);
-
+    const validPercentage = value => typeof value === "number" && Number.isFinite(value)
+      && value >= 0 && value <= 100;
+    const stages = [["deep", "Deep"], ["light", "Light"], ["rem", "REM"]]
+      .map(([key, label]) => ({
+        key, label,
+        attributes: uhGetAttributes(h, p, `${key}_sleep`),
+        value: uhGetNumericState(h, p, `${key}_sleep`),
+        duration: uhFormatDuration(h, p, `${key}_sleep`),
+      }));
+    // The complete stage breakdown can differ from the individual sleep summaries.
+    // Use one reported percentage set consistently; never derive an Awake remainder.
+    const percentageKey = stages.some(stage => validPercentage(stage.attributes.stage_percentage))
+      ? "stage_percentage" : "percentage";
+    for (const stage of stages) {
+      const percentage = stage.attributes[percentageKey];
+      stage.percentage = validPercentage(percentage) ? percentage : null;
+    }
+    const sleepAttributes = uhGetAttributes(h, p, "sleep_score");
+    const awakePercentage = sleepAttributes.awake_percentage;
+    const awakeMinutes = sleepAttributes.awake_minutes;
+    const hasAwakeMinutes = typeof awakeMinutes === "number" && Number.isFinite(awakeMinutes) && awakeMinutes >= 0;
+    if (validPercentage(awakePercentage) || hasAwakeMinutes) {
+      stages.push({
+        key: "awake", label: "Awake",
+        percentage: validPercentage(awakePercentage) ? awakePercentage : null,
+        value: hasAwakeMinutes ? awakeMinutes : null,
+        duration: hasAwakeMinutes ? uhFormatMinutesPlain(awakeMinutes) : "--",
+      });
+    }
+    const bar = stages.filter(stage => stage.percentage !== null)
+      .map(stage => `<div class="bar-seg ${stage.key}" style="width:${stage.percentage}%"></div>`).join("");
+    const legend = stages.filter(stage => stage.value !== null || stage.percentage !== null)
+      .map(stage => `<span class="stage"><span class="stage-dot ${stage.key}"></span>${stage.label} ${stage.percentage !== null ? `${stage.percentage}%` : uhEscape(stage.duration)}</span>`).join("");
     return [
       uhMetricRow("SLEEP SCORE", score ?? "--", "", uhGetScoreColorRaw(score), uhGetScoreLabel(score), this._getSparklineHtml("sleep_score", uhGetScoreColorRaw(score))),
-      `<div class="sleep-bar">`,
-      `<div class="bar-seg deep" style="width:${deepPct}%"></div>`,
-      `<div class="bar-seg light" style="width:${lightPct}%"></div>`,
-      `<div class="bar-seg rem" style="width:${remPct}%"></div>`,
-      `<div class="bar-seg awake" style="width:${awakePct}%"></div>`,
-      `</div>`,
-      `<div class="sleep-stages">`,
-      `<span class="stage"><span class="stage-dot deep"></span>Deep ${deepPct}%</span>`,
-      `<span class="stage"><span class="stage-dot light"></span>Light ${lightPct}%</span>`,
-      `<span class="stage"><span class="stage-dot rem"></span>REM ${remPct}%</span>`,
-      `<span class="stage"><span class="stage-dot awake"></span>Awake ${awakePct}%</span>`,
-      `</div>`,
+      bar ? `<div class="sleep-bar">${bar}</div>` : "",
+      legend ? `<div class="sleep-stages">${legend}</div>` : "",
       `<div class="metric-grid">`,
-      uhMetricRow("TOTAL SLEEP", uhFormatMinutesPlain(total), "", "", score === null ? "" : score >= 70 ? "Optimal" : score >= 50 ? "Good" : "Low", this._getSparklineHtml("total_sleep", "var(--uh-text-secondary)")),
-      uhMetricRow("EFFICIENCY", efficiency !== null ? efficiency + "%" : "--", "", "", efficiency === null ? "" : efficiency >= 90 ? "Optimal" : efficiency >= 80 ? "Good" : "Low", this._getSparklineHtml("sleep_efficiency", "var(--uh-text-secondary)")),
-      uhMetricRow("RESTORATIVE", restorative !== null ? restorative + "%" : "--", "", "", restorative === null ? "" : restorative >= 35 ? "Good" : "Needs attention", ""),
-      uhMetricRow("RESTING HR", rhr ?? "--", "bpm", "", "", ""),
+      uhMetricRow("TOTAL SLEEP", uhFormatDuration(h, p, "total_sleep"), "", "", "", this._getSparklineHtml("total_sleep", "var(--uh-text-secondary)")),
+      uhMetricRow("EFFICIENCY", efficiency ?? "--", uhGetUnit(h, p, "sleep_efficiency", "%"), "", "", this._getSparklineHtml("sleep_efficiency", "var(--uh-text-secondary)")),
+      uhMetricRow("RESTORATIVE SCORE", restorative ?? "--", uhGetUnit(h, p, "restorative_sleep", "score"), uhGetScoreColorRaw(restorative), uhGetScoreLabel(restorative), ""),
+      uhMetricRow("RESTING HR", rhr ?? "--", uhGetUnit(h, p, "resting_heart_rate", "bpm"), "", "", ""),
+      this._renderAdditionalMetrics(["time_in_bed", "temperature_deviation", "hr_drop", "hr_drop_time", "sleep_movements", "restorative_sleep_percentage", "morning_alertness", "morning_alertness_minutes", "full_sleep_cycles", "tosses_and_turns", "average_body_temperature"]),
       `</div>`,
     ].join("");
   }
@@ -893,7 +1034,7 @@ class UltrahumanRingMovementCard extends UltrahumanCardBase {
   static getStubConfig() { return { entity_prefix: "sensor.ultrahuman_ring_your_email_com" }; }
   getCardSize() { return 3; }
 
-  _getRefreshMetrics() { return ["movement_index", "steps", "vo2_max"]; }
+  _getRefreshMetrics() { return ["movement_index", "steps", "vo2_max", "active_minutes", "weekly_active_minutes", "inactive_time"]; }
   _getSparklineEntities() { return ["movement_index", "steps"]; }
 
   _render() {
@@ -929,6 +1070,7 @@ class UltrahumanRingMovementCard extends UltrahumanCardBase {
       uhMetricRow("STEPS", steps !== null ? Math.round(steps).toLocaleString() : "--", "", "", "", this._getSparklineHtml("steps", "var(--uh-text-secondary)")),
       uhMetricRow("VO2 MAX", vo2 ?? "--", "mL/kg/min", "", "", ""),
       `</div>`,
+      this._renderAdditionalMetrics(["active_minutes", "weekly_active_minutes", "inactive_time"]),
     ].join("");
   }
 
@@ -946,7 +1088,7 @@ class UltrahumanRingRecoveryCard extends UltrahumanCardBase {
   static getStubConfig() { return { entity_prefix: "sensor.ultrahuman_ring_your_email_com" }; }
   getCardSize() { return 3; }
 
-  _getRefreshMetrics() { return ["recovery_index", "hrv", "resting_heart_rate", "skin_temperature"]; }
+  _getRefreshMetrics() { return ["recovery_index", "hrv", "resting_heart_rate", "skin_temperature", "temperature_deviation", "average_body_temperature", "morning_alertness", "morning_alertness_minutes", "hr_drop_time", "restorative_sleep_percentage"]; }
   _getSparklineEntities() { return ["recovery_index", "hrv", "resting_heart_rate"]; }
 
   _render() {
@@ -981,7 +1123,8 @@ class UltrahumanRingRecoveryCard extends UltrahumanCardBase {
       uhMetricRow("RECOVERY SCORE", score ?? "--", "", uhGetScoreColorRaw(score), uhGetScoreLabel(score), this._getSparklineHtml("recovery_index", uhGetScoreColorRaw(score))),
       uhMetricRow("HRV AVERAGE", hrv ?? "--", "ms", "", "", this._getSparklineHtml("hrv", "var(--uh-text-secondary)")),
       uhMetricRow("RESTING HEART RATE", rhr ?? "--", "bpm", "", "", this._getSparklineHtml("resting_heart_rate", "var(--uh-text-secondary)")),
-      uhMetricRow("SKIN TEMPERATURE", temp !== null ? parseFloat(temp).toFixed(1) : "--", "\u00B0C", "", "", ""),
+      uhMetricRow("SKIN TEMPERATURE", temp !== null ? temp.toFixed(1) : "--", uhGetUnit(h, p, "skin_temperature", "°C"), "", "", ""),
+      this._renderAdditionalMetrics(["temperature_deviation", "average_body_temperature", "morning_alertness", "morning_alertness_minutes", "hr_drop_time", "restorative_sleep_percentage"]),
     ].join("");
   }
 
@@ -999,7 +1142,7 @@ class UltrahumanRingHeartCard extends UltrahumanCardBase {
   static getStubConfig() { return { entity_prefix: "sensor.ultrahuman_ring_your_email_com" }; }
   getCardSize() { return 4; }
 
-  _getRefreshMetrics() { return ["heart_rate", "resting_heart_rate", "hrv", "spo2"]; }
+  _getRefreshMetrics() { return ["heart_rate", "resting_heart_rate", "hrv", "spo2", "sleep_rhr", "avg_sleep_hrv", "hr_drop"]; }
   _getSparklineEntities() { return ["heart_rate", "resting_heart_rate", "hrv", "spo2"]; }
 
   _render() {
@@ -1035,6 +1178,7 @@ class UltrahumanRingHeartCard extends UltrahumanCardBase {
       uhMetricRow("RESTING HR", rhr ?? "--", "bpm", "", "", this._getSparklineHtml("resting_heart_rate", "var(--uh-text-secondary)")),
       uhMetricRow("HRV", hrv ?? "--", "ms", "", "", this._getSparklineHtml("hrv", "#0EFF27")),
       uhMetricRow("SpO2", spo2 ?? "--", "%", "", "", this._getSparklineHtml("spo2", "var(--uh-text-secondary)")),
+      this._renderAdditionalMetrics(["sleep_rhr", "avg_sleep_hrv", "hr_drop"]),
     ].join("");
   }
 
@@ -1052,7 +1196,7 @@ class UltrahumanRingGlucoseCard extends UltrahumanCardBase {
   static getStubConfig() { return { entity_prefix: "sensor.ultrahuman_ring_your_email_com" }; }
   getCardSize() { return 3; }
 
-  _getRefreshMetrics() { return ["metabolic_score", "average_glucose", "glucose_variability", "hba1c", "time_in_target"]; }
+  _getRefreshMetrics() { return ["glucose", "metabolic_score", "average_glucose", "glucose_variability", "hba1c", "time_in_target"]; }
   _getSparklineEntities() { return ["metabolic_score", "average_glucose"]; }
 
   _render() {
@@ -1085,12 +1229,13 @@ class UltrahumanRingGlucoseCard extends UltrahumanCardBase {
     const hba1c = uhGetNumericState(h, p, "hba1c");
     const timeInTarget = uhGetNumericState(h, p, "time_in_target");
 
-    const hasData = metabolic != null || avgGlucose != null || variability != null || hba1c != null || timeInTarget != null;
+    const glucose = uhGetNumericState(h, p, "glucose");
+    const hasData = glucose != null || metabolic != null || avgGlucose != null || variability != null || hba1c != null || timeInTarget != null;
     if (!hasData) return `<div class="no-data">No glucose data available</div>`;
 
-    const parts = [];
+    const parts = [this._renderAdditionalMetrics(["glucose"])];
     if (metabolic !== null) parts.push(uhMetricRow("METABOLIC SCORE", metabolic, "", uhGetScoreColorRaw(metabolic), uhGetScoreLabel(metabolic), this._getSparklineHtml("metabolic_score", uhGetScoreColorRaw(metabolic))));
-    if (avgGlucose !== null) parts.push(uhMetricRow("AVG GLUCOSE", avgGlucose, "mg/dL", "", "", this._getSparklineHtml("average_glucose", "var(--uh-text-secondary)")));
+    if (avgGlucose !== null) parts.push(uhMetricRow("AVG GLUCOSE", avgGlucose, uhGetUnit(h, p, "average_glucose", "mg/dL"), "", "", this._getSparklineHtml("average_glucose", "var(--uh-text-secondary)")));
 
     const gridItems = [];
     if (variability !== null) gridItems.push(uhMetricRow("VARIABILITY", variability, "%", "", "", ""));
@@ -1109,9 +1254,56 @@ class UltrahumanRingGlucoseCard extends UltrahumanCardBase {
   }
 }
 
+/* ══════════════════════ HOME CARD ══════════════════════ */
+
+class UltrahumanHomeCard extends UltrahumanCardBase {
+  static getConfigElement() { return document.createElement("ultrahuman-home-card-editor"); }
+  static getStubConfig() { return { entity_prefix: "sensor.ultrahuman_home_your_device", title: "Ultrahuman Home" }; }
+  getCardSize() { return 6; }
+
+  _getRefreshMetrics() { return UH_HOME_METRICS.map(([key]) => key); }
+  _getSparklineEntities() { return UH_HOME_METRICS.slice(0, UH_HOME_PRIMARY_COUNT).map(([key]) => key); }
+
+  _renderContent() {
+    const h = this._hass, p = this._prefix;
+    const renderRows = metrics => metrics.map(([key, label]) => {
+      const value = uhGetNumericState(h, p, key);
+      if (value === null) return "";
+      return uhMetricRow(label, value, uhGetUnit(h, p, key), "", "",
+        this._getSparklineHtml(key, "var(--uh-text-secondary)"));
+    }).join("");
+    const primary = renderRows(UH_HOME_METRICS.slice(0, UH_HOME_PRIMARY_COUNT));
+    const details = renderRows(UH_HOME_METRICS.slice(UH_HOME_PRIMARY_COUNT));
+    const expanded = this.shadowRoot?.getElementById("homeDetails")?.open;
+    const timestamps = UH_HOME_METRICS.map(([key]) => {
+      if (uhGetNumericState(h, p, key) === null) return NaN;
+      return Date.parse(uhGetAttributes(h, p, key).reading_timestamp);
+    }).filter(Number.isFinite);
+    let readingTime = "";
+    if (timestamps.length) {
+      const date = new Date(Math.max(...timestamps));
+      try {
+        readingTime = date.toLocaleString(h?.locale?.language, { timeZone: h?.config?.time_zone });
+      } catch {
+        readingTime = date.toISOString();
+      }
+    }
+    return [
+      `<h3 class="home-title">${uhEscape(this._config.title || "Ultrahuman Home")}</h3>`,
+      readingTime ? `<div class="reading-time">Latest reading: ${uhEscape(readingTime)}</div>` : "",
+      primary ? `<div class="metric-grid">${primary}</div>` : "",
+      details ? `<details id="homeDetails" ${expanded ? "open" : ""}><summary>More environmental readings</summary><div class="metric-grid">${details}</div></details>` : "",
+      !primary && !details ? `<div class="no-data">No Home readings available</div>` : "",
+    ].join("");
+  }
+}
+
 /* ══════════════════════ EDITOR ══════════════════════ */
 
 class UltrahumanEditorBase extends HTMLElement {
+  get _prefixPlaceholder() { return "sensor.ultrahuman_ring_your_email_com"; }
+  get _hasTitle() { return false; }
+
   setConfig(config) {
     this._config = config;
     this._render();
@@ -1153,7 +1345,7 @@ class UltrahumanEditorBase extends HTMLElement {
     input.id = "prefix";
     input.type = "text";
     input.value = this._config.entity_prefix || "";
-    input.placeholder = "sensor.ultrahuman_ring_your_email_com";
+    input.placeholder = this._prefixPlaceholder;
     input.addEventListener("input", (e) => {
       this._config = { ...this._config, entity_prefix: e.target.value };
       this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: this._config }, bubbles: true, composed: true }));
@@ -1166,6 +1358,23 @@ class UltrahumanEditorBase extends HTMLElement {
     row.appendChild(hint);
 
     editor.appendChild(row);
+    if (this._hasTitle) {
+      const titleRow = document.createElement("div");
+      titleRow.className = "row";
+      const titleLabel = document.createElement("label");
+      titleLabel.textContent = "Title (optional)";
+      const titleInput = document.createElement("input");
+      titleInput.type = "text";
+      titleInput.value = this._config.title || "";
+      titleInput.placeholder = "Ultrahuman Home";
+      titleInput.addEventListener("input", event => {
+        this._config = { ...this._config, title: event.target.value };
+        this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: this._config }, bubbles: true, composed: true }));
+      });
+      titleRow.appendChild(titleLabel);
+      titleRow.appendChild(titleInput);
+      editor.appendChild(titleRow);
+    }
     root.appendChild(editor);
   }
 }
@@ -1177,6 +1386,10 @@ class UltrahumanRingMovementCardEditor extends UltrahumanEditorBase {}
 class UltrahumanRingRecoveryCardEditor extends UltrahumanEditorBase {}
 class UltrahumanRingHeartCardEditor extends UltrahumanEditorBase {}
 class UltrahumanRingGlucoseCardEditor extends UltrahumanEditorBase {}
+class UltrahumanHomeCardEditor extends UltrahumanEditorBase {
+  get _prefixPlaceholder() { return "sensor.ultrahuman_home_your_device"; }
+  get _hasTitle() { return true; }
+}
 
 /* ══════════════════════ REGISTER ══════════════════════ */
 
@@ -1195,8 +1408,12 @@ customElements.define("ultrahuman-ring-heart-card-editor", UltrahumanRingHeartCa
 customElements.define("ultrahuman-ring-glucose-card", UltrahumanRingGlucoseCard);
 customElements.define("ultrahuman-ring-glucose-card-editor", UltrahumanRingGlucoseCardEditor);
 
+customElements.define("ultrahuman-home-card", UltrahumanHomeCard);
+customElements.define("ultrahuman-home-card-editor", UltrahumanHomeCardEditor);
+
 window.customCards = window.customCards || [];
 window.customCards.push(
+  { type: "ultrahuman-home-card", name: "Ultrahuman Home", description: "Environmental readings, latest-reading time, and sparkline trends", preview: true, documentationURL: "https://github.com/tanujdargan/ultrahuman-ha" },
   { type: "ultrahuman-ring-card", name: "Ultrahuman Ring Card", description: "All-in-one compact dashboard with sparkline graphs", preview: true, documentationURL: "https://github.com/tanujdargan/ultrahuman-ha" },
   { type: "ultrahuman-ring-overview-card", name: "Ultrahuman Overview", description: "Ring SVG hero with score arcs and snapshot pills", preview: true, documentationURL: "https://github.com/tanujdargan/ultrahuman-ha" },
   { type: "ultrahuman-ring-sleep-card", name: "Ultrahuman Sleep", description: "Sleep score with stage bar, contributors, and sparklines", preview: true, documentationURL: "https://github.com/tanujdargan/ultrahuman-ha" },

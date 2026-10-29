@@ -1,22 +1,16 @@
-# Ultrahuman Ring Dashboard Card
+# Register /ultrahuman/ultrahuman-ring-card.js as a JavaScript module resource
+# if automatic resource registration is unavailable.
 #
-# Usage:
-# 1. The card JS is auto-registered when the integration loads.
-#    If auto-registration fails, add the resource manually:
-#      Settings → Dashboards → Resources → Add Resource
-#      URL: /ultrahuman/ultrahuman-ring-card.js
-#      Type: JavaScript Module
-#
-# 2. Add the card to your dashboard:
-#    - Edit Dashboard → Add Card → Search "Ultrahuman Ring Card"
-#    - Or use the YAML below in a Manual card.
-#
-# 3. Set entity_prefix to the common prefix of your Ultrahuman sensor entities.
-#    Find your prefix in Developer Tools → States by filtering for "ultrahuman".
-#    For example, if your entities look like:
-#      sensor.ultrahuman_ring_user_example_com_sleep_score
-#    Then your prefix is:
-#      sensor.ultrahuman_ring_user_example_com
-
-type: custom:ultrahuman-ring-card
-entity_prefix: sensor.ultrahuman_ring_your_email_com
+# Replace these prefixes with your actual entity prefixes from Developer Tools
+# → States. One prefix identifies one daily account or one Home device.
+# These example prefixes are placeholders; generated names depend on your setup.
+type: vertical-stack
+cards:
+  - type: custom:ultrahuman-ring-card
+    entity_prefix: sensor.ultrahuman_ring_your_account
+  - type: custom:ultrahuman-home-card
+    entity_prefix: sensor.ultrahuman_home_living_aabbccddeeff
+    title: Living Room
+  - type: custom:ultrahuman-home-card
+    entity_prefix: sensor.ultrahuman_home_bedroom_112233445566
+    title: Bedroom
